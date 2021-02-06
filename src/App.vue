@@ -24,6 +24,8 @@
       <div class='row'>
         <div class='col'>
           <h3>{{this.result.name.toUpperCase()}}</h3>
+          <h5>{{this.result.size}}
+          </h5>
         </div>
       </div>
     </div>
@@ -41,7 +43,8 @@ export default {
       monster1 : '',
       monster2 : '',
       result : {
-        name: ''
+        name: '',
+        size : ''
       }
     }
   },
@@ -59,7 +62,7 @@ export default {
     mix() {
       console.log("1:",this.monster1);
       console.log("2:",this.monster2);
-      this.result.name = Mixer.generateName(this.monster1,this.monster2);
+      this.result = Mixer.mix(this.monster1,this.monster2);
     }
   },
   created () {
