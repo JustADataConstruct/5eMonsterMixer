@@ -18,14 +18,16 @@
       </div>
       <div class='row mt-3'>
         <div class='col'>
-          <b-button @click="mix" variant="danger">MIX</b-button>
+          <b-button @click="mix" variant="danger" :disabled=isDisabled>MIX</b-button>
         </div>
       </div>
-      <div class='row'>
-        <div class='col'>
+      <div class='row mt-3'>
+        <div class='col text-left'>
           <h3>{{this.result.name.toUpperCase()}}</h3>
-          <h5>{{this.result.size}}
-          </h5>
+          <h5><i>{{this.result.size}} {{this.result.type}}, {{this.result.alignment}}</i></h5>
+          ---- <br>
+          <p><b>Armor Class:</b> {{this.result.ac}}</p>
+          <p><b>Hit Points:</b> {{this.result.hp}}</p>
         </div>
       </div>
     </div>
@@ -44,8 +46,13 @@ export default {
       monster2 : '',
       result : {
         name: '',
-        size : ''
-      }
+        size : '',
+        type: '',
+        alignment:'',
+        ac:0,
+        hp:0
+      },
+      btnEnabled : false
     }
   },
   methods: {
@@ -59,15 +66,17 @@ export default {
         }
       })
     },
-    mix() {
-      console.log("1:",this.monster1);
-      console.log("2:",this.monster2);
-      this.result = Mixer.mix(this.monster1,this.monster2);
-    }
+    async mix() {
+      this.result = await Mixer.mix(this.monster1,this.monster2);
+    },
   },
   created () {
     this.fetchMonsters();
-
+  },
+  computed: {
+    isDisabled() {
+      return this.monster1 == '' || this.monster2 == '';
+    }
   },
 };
 </script>

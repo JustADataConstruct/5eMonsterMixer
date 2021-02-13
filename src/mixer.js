@@ -1,31 +1,34 @@
 import axios from 'axios';
+import {median} from 'mathjs';
 
 var monster1, monster2;
 
 function rand(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
 }
-function initMonsters(name1,name2)
+
+function throwCoin()
+{
+    return rand(0,100) > 50;
+}
+
+async function initMonster(name)
 {
     const base = `http://www.dnd5eapi.co/api/monsters/`
 
-    axios.get(base+name1).then((response) => {
-        monster1 = response.data;
-    })
-
-    axios.get(base+name2).then((response) => {
-        monster2 = response.data;
+    return axios.get(base+name).then((response) => {
+        return response.data;
     })
 }
 
-function generateName(name1,name2) 
+function generateName(name1,name2) //TODO: Keep working on this.
 {
     var w1 = name1.split("-");
     var w2 = name2.split("-");
 
     var words = w1.concat(w2)
 
-    var count = rand(1,(w1.length + w2.length));
+    var count = rand(1,(w1.length+1 + w2.length+1));
     var result = []
 
     while (count > 0) {
@@ -53,22 +56,56 @@ function generateSize()
     return sizes[rand(0,sizes.length)];
 }
 
-export function mix(name1, name2)
+function generateType() //TODO: Option to generate type outside of the monsters' own types.
 {
-    if (monster1 && monster2)
+    var type;
+    if (throwCoin())
     {
-        if (name1 != monster1.index || name2 != monster2.index)
-        {
-            console.log("Init");
-            initMonsters(name1,name2);
-        }
+        type = monster1.type;
     }
     else {
-        initMonsters(name1,name2);
-    }  
+        type = monster2.type;
+    }
+    return type;
+}
+
+function generateAlignment()
+{
+    if (rand(0,100) < 25) {
+        return "unaligned";
+    }
+    var a1 = ["lawful","neutral","chaotic"]
+    var a2 = ["good","neutral","evil"]
+    return a1[rand(0,a1.length)] + " " + a2[rand(0,a2.length)]
+}
+
+function generateAC()
+{
+    return median(monster1.armor_class,monster2.armor_class);
+}
+
+function generateHP()
+{
+    return median(monster1.hit_points,monster2.hit_points);
+}
+
+
+export async function mix(name1, name2)
+{
+    if ((!monster1 || !monster2) || (monster1.index != name1 || monster2.index != name2))
+    {
+        console.log("Reloading.");
+        monster1 = await initMonster(name1);
+        monster2 = await initMonster(name2);
+    
+    }
     var result = {
         name:generateName(name1,name2),
-        size:generateSize()
+        size:generateSize(),
+        type:generateType(),
+        alignment:generateAlignment(),
+        ac:generateAC(),
+        hp:generateHP()
     };
     return result;
 }
